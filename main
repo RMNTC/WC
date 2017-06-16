@@ -1,0 +1,150 @@
+
+#include <stdio.h>
+#include <sys/stat.h>
+#include <ctype.h>
+struct Parametrs{
+    int C;
+    int l;
+    int W;
+    int M;
+    int T;
+    int V;
+    int L;
+};
+void _printf(struct Parametrs parametr);
+void _printfTotalCount(int TotalBytecounter ,int TotalScounter ,
+                       int TotalWcounter, int TotalCharCounter ){
+    printf("Total byte count %d in files\n ", TotalBytecounter );
+    printf("Total strings count %d in file\n ", TotalScounter);
+    printf("Total words count %d in file\n ", TotalWcounter );
+    printf("Total chars count %d in file\n ",TotalCharCounter );
+
+}
+void Instruction(){
+    printf("Instruction... \n");
+    printf("It's console utility\n");
+    printf("This one support options sush as -c -l -w -m -t\n");
+    printf("-c or --bytes print number of bytes in file\n");
+    printf("-l or --lines print number of lines in file\n");
+    printf("-w or --words print number of words in file\n");
+    printf("-m or --chars print number of chars in file\n");
+    printf("-L or --max-line-length print max number in lines\n");
+    printf("-t print total number options in files\n");
+    printf("-v print inforamtion about console utulity\n");
+}
+void About(){
+    printf("WC version 1.1\n");
+    printf("by Roman Voznyi\n");
+    printf("Vladivostok 2017\n");
+}
+
+struct stat statistic;
+int TotalScounter, TotalWcounter, TotalCharcounter, TotalBytecounter;
+int Scounter = 1;
+int Wcounter = 0;
+int Charcounter =0;
+int TotalCountFlag =0;
+int CurrentNumberWords = 0, MaxNumberWords = 0, cc = 0;
+int main(int argc, char *argv[]) {
+    if(argc == 1) return 0;
+   struct Parametrs parametrs;
+    int ParametrsReading = 1;
+    for(int i = 1; i < argc; i++){
+        freopen(argv[i], "r", stdin);
+        if( ParametrsReading == 1 && argv[i][0] == '-' ){
+            if(argv[i][2] == 'h'){
+               Instruction();
+                break;
+            }
+            if(argv[i][2] == 'v'){
+                About();
+                break;
+            }
+            if(argv[i][1] == 't') {
+               TotalCountFlag = 1;
+                continue;
+            }
+            if((argv[i][1] == 'c')){
+                parametrs.C = 1;
+                continue;
+                }
+            else if((argv[i][1] == 'l')){
+                parametrs.l = 1;
+                continue;
+                }
+            else if((argv[i][1] == 'w')){
+                parametrs.W = 1;
+                continue;
+                }
+            else if((argv[i][1] == 'm')){
+                parametrs.M = 1;
+                continue;
+            }
+            else if((argv[i][1] == 'L')){
+                parametrs.L = 1;
+                continue;
+            }
+        }
+       ParametrsReading = 0;
+        if(stdin == NULL) {
+            continue;
+        }
+
+        int str;
+        int WordFlag = 0;
+        while((str = getchar()) != EOF){
+
+            if(isspace(str) == 0) {
+                Charcounter++;
+                cc++;
+            }
+            if(isspace(str)!= 0){
+                if(str == '\n') {
+                    Scounter++;
+                    CurrentNumberWords = cc;
+                    if(CurrentNumberWords > MaxNumberWords){
+                        MaxNumberWords = CurrentNumberWords;
+
+                    }
+                    cc =0;
+                    CurrentNumberWords = cc;
+                WordFlag = 0;
+                }
+                if(str == ' '){
+                    WordFlag = 0;
+                }
+            }
+            else if(WordFlag == 0){
+                Wcounter++;
+                WordFlag = 1;
+            }
+
+        }
+        fstat(fileno(stdin), &statistic);
+        _printf(parametrs);
+        TotalBytecounter += statistic.st_size;
+        TotalScounter += Scounter;
+        TotalWcounter += Wcounter;
+        TotalCharcounter +=  Charcounter;
+        Scounter = 1;
+        Wcounter = 0;
+        Charcounter =0;
+        CurrentNumberWords = 0;
+        MaxNumberWords = 0;
+        cc =0;
+    }
+    if(TotalCountFlag == 1){
+        _printfTotalCount(TotalBytecounter,TotalScounter, TotalWcounter, TotalCharcounter);
+    }
+    return 0;
+}
+void _printf(struct Parametrs parametr){
+    printf("                  \n");
+    if(parametr.C == 1) printf("%d Byte in file \n", statistic.st_size);
+    if(parametr.l == 1) printf("String count %d in file\n", Scounter);
+    if(parametr.W == 1) printf("Word count %d in file\n", (Wcounter));
+    if(parametr.M == 1)printf("Chars count %d in file\n ", Charcounter );
+    if(parametr.L == 1)printf("Max number chars in length %d\n", MaxNumberWords);
+    printf("                  \n");
+
+};
